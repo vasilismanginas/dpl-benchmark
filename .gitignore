@@ -1,0 +1,5 @@
+.vscode/
+__pycache__/
+notes_and_unused.py
+some_flow.txt
+data/
