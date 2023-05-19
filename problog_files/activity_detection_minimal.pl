@@ -1,3 +1,5 @@
+:-consult('cached_predicates.pl').
+
 
 % for the simple case we don't check:
 %   if F is a fluent
@@ -10,8 +12,9 @@
 nn(lstm_net, [Video, P, T], SE, [active, inactive, walking, running]) :: happensAt(Video, P, T, SE).
 
 
+
 holdsAt(Video, F, T) :- previous(T1, T), initiatedAt(F, Video, T1).
-holdsAt(Video, F, T) :- previous(T1, T), holdsAt(Video, F, T1), \+terminatedAt(F, Video, T1).
+holdsAt(Video, F, T) :- previous(T1, T), cached(Video, F, T1), \+terminatedAt(F, Video, T1).
 
 initiatedAt(interacting(P1, P2), Video, T) :- 
     happensAt(Video, P1, T, walking),

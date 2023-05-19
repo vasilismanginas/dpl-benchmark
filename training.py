@@ -3,7 +3,7 @@ import torch
 from data import CaviarFrames, CAVIARDataset
 from network import LSTM_net
 from deepproblog.network import Network
-from deepproblog.model import Model
+from model import Model
 from deepproblog.engines import ExactEngine
 from deepproblog.dataset import DataLoader
 from deepproblog.train import train_model
@@ -18,6 +18,9 @@ shuffle_dataset = True
 # weird:batching = False for the Network but batch_size still passed in the DataLoader
 batch_size = 1
 
+#create the problog chache file, with initial throwaway probabilistic fact
+with open('cached_predicates.pl', 'w') as f:
+    f.write('0.0::cached(tensor(train(0)),interacting(p1,p2),0).')
 
 # define network and make it DeepProbLog-compatible
 rnn = LSTM_net(num_classes=4, input_size=5, hidden_size=32, num_layers=1)
