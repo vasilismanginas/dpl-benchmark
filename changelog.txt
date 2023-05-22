@@ -1,0 +1,40 @@
+Two files were added: model.py and solver.py, which were copied from the deepproblog source code in order to modify the Solver class.
+
+On training.py
+Changed line 6:
+'from deepproblog.model import Model' -> 'from model import Model'
+Added the following on line 20:
+with open('cached_predicates.pl', 'w') as f:
+    f.write('0.0::cached(tensor(train(0)),interacting(p1,p2),0).')
+
+On model.py
+Changed line 35:
+'from deepproblog.solver import Solver' -> 'from solver import Solver'
+
+On solver.py
+Added after line 95: (Solver.solve() definition)
+save_previous_predicate(result[0])
+
+The function above is defined in this snippet:
+def save_previous_predicate(prev_result):
+    filename = 'cached_predicates.pl'
+    prev_result = str(prev_result)[1:-1]
+    probability = prev_result.split('(')[-1].split(',')[0]
+    predicate = 'cached' + prev_result.split(':')[0][7:] 
+    final = probability + '::' + predicate + '.'
+ 
+    print(final)
+    with open(filename, 'w') as f:
+        f.write(final + '\n')
+        
+In essence, when the Solver.solve() function is called all inferred facts are stored in a list called results. We take the first element of the list, which is the probability that the head of the first rule is true(the first rule is the holdsAt definition), this is given as input to the function save_previous_predicate which saves the probabilistic fact in a file called 'cached_predicates.pl'.
+
+On activity_detection_minimal.pl
+Added the line ':- consult('cached_predicates.pl').' at the beginning of the file.
+Changed the second definition of the holdsAt/3 predicate:
+'holdsAt(Video, F, T) :- previous(T1, T), holdsAt(Video, F, T1), \+terminatedAt(F, Video, T1).' -> ''holdsAt(Video, F, T) :- previous(T1, T), cached(Video, F, T1), \+terminatedAt(F, Video, T1).
+
+This change prevents the program from recursively trying to find the probabilities for the holdsAt/3 predicate for each previous timepoint, using instead the cached/3 predicate which is the information regarding the last timepoint, which is stored in the file.
+
+Note:
+The cached_predicates.pl file needs to be initialized with a cached/3 predicate defined at the beginning or an error will occur. The file is initialized with the following fact: '0::cached(tensor(train(1000)),interacting(p1,p2),0).', which does not affect the training of the model and is overwritten after the first loop.
